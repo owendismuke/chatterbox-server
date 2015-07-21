@@ -12,6 +12,20 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+var path = require("path");
+var testData = '{"results":[{"createdAt":"2015-07-20T22:50:03.755Z","objectId":"YgwtoWWK2A","roomname":"room1","text":"good thing","updatedAt":"2015-07-20T22:50:03.755Z","username":"guru"}]}';
+var messages = { results: [] };
+
+var routes = {
+  '/classes/messages' : function(){
+    return JSON.stringify(messages);
+  },
+  '/classes/room1': function(){
+    return JSON.stringify(messages);
+  },
+  '/log': {}
+};
+
 exports.requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -30,21 +44,44 @@ exports.requestHandler = function(request, response) {
   console.log("Serving request type " + request.method + " for url " + request.url);
 
   // The outgoing status.
-  var statusCode = 200;
+  var statusCode = 404;
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
+  var body = 'Hello World';
 
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = "text/plain";
+  
+  if(routes.hasOwnProperty(request.url)){
+    headers['Content-Type'] = "application/json";
+    if (request.method === 'GET'){
+      statusCode = 200;
+      body = routes[request.url]();
+    }
 
+    if (request.method === 'POST'){
+      statusCode = 201;
+      request.on('data', function(data){
+        messages.results.push(JSON.parse(data.toString("utf-8")));
+      });
+      // request.on('end', function () {
+      //   console.log('Request Ended');
+      // });
+      body = JSON.stringify({ success: true });
+    }
+    if (request.method === 'OPTIONS'){
+      statusCode = 200;
+      headers['Allow'] = 'GET, POST, OPTIONS';
+    }
+  }
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
-
+  
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
@@ -52,7 +89,7 @@ exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end("Hello, World!");
+  response.end(body);
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
