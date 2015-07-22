@@ -5,10 +5,10 @@ var Message = function(username, text, roomname){
 };
 
 var App = function() {
-  this._baseUrl = 'http://localhost:3000/classes/messages';
+  this._baseUrl = 'http://localhost:3000/classes/';
   this._lastRetrieve;
-  this._currentRoom;
-  this._rooms = {allRooms: ""};
+  this._currentRoom = "Home";
+  this._rooms = {Home: "Home"};
   this._friends = {};
   this._lastSentMessage;
   this._lastSentMessageTime;
@@ -20,7 +20,7 @@ App.prototype.constructor = App;
 App.prototype.init = function(){
   var _context = this;
   $(document).ready(function(){
-    $('<option/>').val('').text('allRooms').appendTo('#roomSelect');
+    $('<option/>').val('Home').text('Home').appendTo('#roomSelect');
     
     $('#roomSelect').change(function(){
       _context.changeRoom($(this).val());
@@ -34,7 +34,7 @@ App.prototype.init = function(){
     $('#addRoom').click(function(){
       $('#roomAdd').hide();
       $('#newRoom').show();
-      var room = $('#roomName').val();
+      var room = $('#roomName').val().replace(' ','');
       _context.addRoom(room);
       _context.changeRoom(room);
       $('#roomSelect').val(room);
@@ -80,7 +80,7 @@ App.prototype.send = function(message){
   
   var attemtped = false;
   return $.ajax({
-    url: context._baseUrl,
+    url: context._baseUrl + context._currentRoom,
     type: 'POST',
     data: JSON.stringify(message),
     contentType: 'application/json',
@@ -91,13 +91,13 @@ App.prototype.send = function(message){
       return true;
     },
     error: function (data) {
-      if(!attemtped) {
-        attemtped = true;
-        context.send(message);
-      } else {
+      // if(!attemtped) {
+      //   attemtped = true;
+      //   context.send(message);
+      // } else {
         console.error('chatterbox: failed to send message');
         return false;
-      }
+      // }
     }
   });
 };
@@ -125,7 +125,7 @@ App.prototype.fetch = function(){
   if (context._timeout !== undefined) { clearTimeout(context._timeout); }
 
   $.ajax({
-    url: context._baseUrl,// + where,
+    url: context._baseUrl + context._currentRoom,// + where,
     type: 'GET',
     //Pull these methods out
     success: function(data){
@@ -183,7 +183,7 @@ App.prototype.changeRoom = function(room){
 
 App.prototype.handleSubmit = function(message, room){
   var user = this.getUsername();
-  var room = this._currentRoom || "";
+  var room = this._currentRoom || "Home";
   var message = new Message(user, message, room);
   return this.send(message);
 };

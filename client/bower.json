@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "dependencies": {
     "jquery": "~2.0.3",
-    "underscore": "~1.8.3"
+    "underscore": "~1.8.3",
+    "firebase": "~2.2.7"
   },
   "ignore": [
     "**/.*",

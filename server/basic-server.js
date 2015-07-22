@@ -16,7 +16,6 @@ var port = 3000;
 var ip = "127.0.0.1";
 
 
-
 // We use node's http module to create a server.
 //
 // The function we pass to http.createServer will be used to handle all
